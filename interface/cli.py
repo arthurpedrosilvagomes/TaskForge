@@ -6,7 +6,24 @@ clear = lambda: os.system("cls" if os.name == "nt" else "clear")
 
 class InterfaceCLI:
     def __init__(self):
-        pass
+        self.manager = Manager()
+
+        self.menu_options = {
+            1: self.add_task,
+            2: self.show_tasks
+        }
+
+    def add_task(self):
+        new_task = self.user_input("Digite a tarefa: ")
+        self.manager.add_task(new_task)
+    
+    def show_tasks(self):
+        try:
+            for task, is_done in self.manager.show_task():
+                print(f"Tarefa: {task} - feita: {is_done}")
+        
+        except EmptyTaskList as e:
+            print(e)
 
     def show_menu(self):
         print("=== TASKFORGE - GERENCIADOR DE TAREFAS ===\n" \
@@ -39,3 +56,4 @@ class InterfaceCLI:
                 print("Digite apenas os números mostrados no menu!")
             else:
                 clear()
+                self.menu_options[users_choice]()

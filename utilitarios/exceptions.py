@@ -1,6 +1,5 @@
 class TaskManagerError(Exception):
-    def __init__(self):
-        pass
+    pass
 
 class EmptyTaskList(TaskManagerError):
     def __init__(self, message = "Lista de tarefas vazias"):

@@ -7,7 +7,7 @@ class Manager:
     def add_task(self, task):
         self.tasks[task] = "não"
 
-    def show_task(self, task):
+    def show_task(self):
         if self.tasks:
             return self.tasks.items()
         else:
