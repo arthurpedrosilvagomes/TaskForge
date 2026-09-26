@@ -10,7 +10,9 @@ class InterfaceCLI:
 
         self.menu_options = {
             1: self.add_task,
-            2: self.show_tasks
+            2: self.show_tasks,
+            3: self.task_is_done,
+            4: self.del_task
         }
 
     def add_task(self):
@@ -19,11 +21,42 @@ class InterfaceCLI:
     
     def show_tasks(self):
         try:
-            for task, is_done in self.manager.show_task():
-                print(f"Tarefa: {task} - feita: {is_done}")
+            task_list = list(self.manager.show_task())
+
+            for i in range(len(task_list)):
+                print(f"[{i + 1}] Tarefa: {task_list[i][0]} - Feito?: {task_list[i][1]}")
         
         except EmptyTaskList as e:
             print(e)
+            return False
+
+    def task_is_done(self):
+        try:
+            if self.show_tasks() == False:
+                return
+
+            users_choice = self.user_input("Escolha um dos numeros correspondente a tarefa: ", "selecione apenas números!", int)
+            task_list = list(self.manager.show_task())
+            task_done = task_list[users_choice - 1][0]
+
+            self.manager.task_done(task_done)
+
+        except TaskNotFound as e:
+            print(e)
+
+    def del_task(self):
+        try:
+            if self.show_tasks() == False:
+                return
+
+            users_choice = self.user_input("Escolha um dos numeros correspondente a tarefa: ", "selecione apenas números!", int)
+            task_list = list(self.manager.show_task())
+            deleted_task = task_list[users_choice - 1][0]
+
+            self.manager.del_task(deleted_task)
+
+        except TaskNotFound as e:
+            print(e) 
 
     def show_menu(self):
         print("=== TASKFORGE - GERENCIADOR DE TAREFAS ===\n" \
