@@ -1,71 +1,172 @@
 # TaskForge
 
-TaskForge é um gerenciador de tarefas executado no terminal. O programa permite cadastrar tarefas, consultar a lista, marcar uma tarefa como concluída e apagar uma tarefa.
+TaskForge é um gerenciador de tarefas em linha de comando, desenvolvido em Python para facilitar o cadastro, a consulta, a marcação de conclusão e a exclusão de atividades diretamente no terminal.
 
-## Funcionalidades
+O projeto foi pensado como uma aplicação simples, organizada por camadas, com separação entre interface do usuário, lógica de negócio e tratamento de erros. Ele funciona como uma ferramenta de produtividade básica para quem deseja controlar pequenas listas de tarefas de forma prática.
 
-- Cadastrar uma tarefa informando sua descrição.
-- Listar as tarefas com um número e o estado de conclusão (`sim` ou `não`).
-- Marcar uma tarefa da lista como concluida.
-- Apagar uma tarefa da lista.
-- Validar entradas numericas do menu e das operacoes que selecionam uma tarefa.
-- Informar quando a lista está vazia.
+## Funcionalidades implementadas
 
-## Como foi construido
+A versão atual do projeto oferece as seguintes operações:
 
-O projeto foi organizado em módulos Python com responsabilidades separadas:
+- Cadastro de tarefas com descrição informada pelo usuário.
+- Listagem das tarefas cadastradas com seu status de conclusão.
+- Marcação de uma tarefa como concluída.
+- Exclusão de uma tarefa da lista.
+- Validação de entradas numéricas para o menu e para a seleção de tarefas.
+- Tratamento de casos quando a lista está vazia.
+- Mensagens de erro para tarefas duplicadas e tarefas inexistentes.
 
-1. `main.py` é o ponto de entrada. Ele instancia `InterfaceCLI` e inicia o loop da aplicação com `run()`.
-2. `interface/cli.py` implementa a interação com o usuário. A classe `InterfaceCLI` apresenta o menu, coleta e converte entradas, mostra tarefas e direciona as operações para o gerenciador.
-3. `sistema/manager.py` concentra as operações sobre as tarefas. A classe `Manager` cadastra, lista, conclui e apaga itens.
-4. `utilitarios/exceptions.py` define exceções próprias para representar erros relacionados ao gerenciamento de tarefas.
+## O que foi feito
 
-Na interface, um dicionário associa cada opção do menu a um método. A camada de interface chama os métodos de `Manager`, sem implementar diretamente a manipulação da coleção. O gerenciador representa as tarefas em um dicionário Python: a descrição é a chave e o estado de conclusão é o valor (`"não"` ou `"sim"`).
+O projeto foi estruturado em módulos para manter a organização e facilitar a manutenção do código:
 
-## Estrutura dos modulos
+- `main.py`: arquivo principal da aplicação. Ele instancia a interface e inicia o loop principal do programa.
+- `interface/cli.py`: responsável pela interação com o usuário, apresentação do menu, leitura de entradas e chamadas às ações do sistema.
+- `sistema/manager.py`: centraliza a lógica de gerenciamento das tarefas, armazenando e manipulando os dados.
+- `utilitarios/exceptions.py`: define as exceções personalizadas do domínio da aplicação.
 
-| Arquivo ou pacote | Responsabilidade |
-| --- | --- |
-| `main.py` | Inicia a aplicação de linha de comando. |
-| `interface/cli.py` | Exibe o menu, recebe entradas, imprime resultados e chama o gerenciador. Usa `os` para limpar o terminal de acordo com o sistema operacional. |
-| `interface/__init__.py` | Inicializa o pacote `interface`; atualmente está vazio. |
-| `sistema/manager.py` | Mantém o dicionário de tarefas e implementa as operações de gerenciamento. |
-| `sistema/__init__.py` | Inicializa o pacote `sistema`; atualmente está vazio. |
-| `utilitarios/exceptions.py` | Define `TaskManagerError`, `EmptyTaskList` e `TaskNotFound`. |
-| `utilitarios/__init__.py` | Inicializa o pacote `utilitarios`; atualmente está vazio. |
+Além disso, o programa foi implementado com um fluxo de execução em terminal, em que o usuário escolhe opções em um menu e o sistema responde imediatamente com mensagens de confirmação ou erro.
 
-### Excecoes
+## Como foi feito
 
-- `TaskManagerError` e a excecao-base do dominio.
-- `EmptyTaskList` é usada quando se tenta obter tarefas sem haver itens cadastrados.
-- `TaskNotFound` representa uma tarefa que não foi encontrada, embora o fluxo atual do gerenciador não converta todos os casos de chave inexistente para essa exceção.
+### 1. Ponto de entrada
 
-## Tecnologias e dependencias
+O arquivo `main.py` é muito simples e tem a função de inicializar a aplicação:
 
-- **Python 3**: linguagem e ambiente de execução do projeto.
-- **Biblioteca padrao `os`**: usada para escolher o comando de limpeza do terminal (`cls` no Windows e `clear` em outros sistemas).
-- **Modulos locais**: `interface`, `sistema` e `utilitarios`, importados entre si para separar apresentacao, logica de tarefas e excecoes.
-- **Pacotes externos**: nenhum identificado na implementacao atual.
+```python
+from interface.cli import InterfaceCLI
+
+taskmanager = InterfaceCLI()
+taskmanager.run()
+```
+
+Esse trecho cria uma instância da classe `InterfaceCLI` e chama o método `run()`, que inicia o loop principal da aplicação.
+
+### 2. Interface de linha de comando
+
+A classe `InterfaceCLI` fica em `interface/cli.py` e é responsável por:
+
+- exibir o menu do programa;
+- capturar a entrada do usuário;
+- converter valores para os tipos esperados;
+- limpar o console conforme o sistema operacional;
+- chamar os métodos adequados do gerenciador.
+
+Ela também usa um dicionário chamado `menu_options`, no qual cada opção numérica do menu é associada a uma função específica:
+
+```python
+self.menu_options = {
+    1: self.add_task,
+    2: self.show_tasks,
+    3: self.task_is_done,
+    4: self.del_task
+}
+```
+
+Isso torna a aplicação mais organizada e facilita a extensão do código.
+
+A leitura das entradas é feita por um método reutilizável chamado `user_input()`, que tenta converter a informação digitada para o tipo solicitado e repete a pergunta caso o valor seja inválido.
+
+### 3. Lógica de negócio do gerenciamento de tarefas
+
+A lógica principal está em `sistema/manager.py`. A classe `Manager` mantém um dicionário em memória:
+
+```python
+self.tasks = {}
+```
+
+No sistema atual, cada tarefa é representada pela sua descrição como chave e pelo status como valor:
+
+- `"não"` → tarefa ainda não concluída
+- `"sim"` → tarefa concluída
+
+A estrutura fica assim:
+
+```python
+self.tasks[task] = "não"
+```
+
+Os métodos implementados são:
+
+- `add_task(task)`: cadastra uma nova tarefa se ela ainda não existir.
+- `show_task()`: retorna as tarefas cadastradas ou dispara erro quando a lista estiver vazia.
+- `task_done(task)`: marca a tarefa informada como concluída.
+- `del_task(task)`: remove a tarefa escolhida.
+
+### 4. Tratamento de exceções
+
+O projeto usa exceções personalizadas em `utilitarios/exceptions.py` para deixar o código mais claro e a aplicação mais robusta.
+
+As exceções definidas são:
+
+- `TaskManagerError`: classe base para erros do domínio.
+- `EmptyTaskList`: usada quando o usuário tenta listar tarefas sem que nenhuma tenha sido cadastrada.
+- `TaskNotFound`: lançada quando uma tarefa informada não existe.
+- `TaskAlreadyCreated`: lançada quando o usuário tenta criar uma tarefa duplicada.
+
+Essas exceções ajudam a centralizar as mensagens de erro e tornam o fluxo da aplicação mais organizado.
+
+## Como a aplicação funciona
+
+O fluxo de uso do programa é simples:
+
+1. O usuário executa o programa.
+2. O menu é exibido com as opções disponíveis.
+3. O usuário escolhe uma ação.
+4. O sistema valida a entrada.
+5. A operação específica é executada.
+6. O programa retorna uma mensagem de confirmação ou informa o erro correspondente.
+
+### Menu principal
+
+```text
+=== TASKFORGE - GERENCIADOR DE TAREFAS ===
+[1] Cadastrar tarefa
+[2] Mostrar tarefas cadastradas
+[3] Marcar tarefa como concluída
+[4] Apagar tarefa
+[5] Sair
+```
+
+## Estrutura atual do projeto
+
+```text
+TaskForge/
+├── main.py
+├── README.md
+├── interface/
+│   ├── __init__.py
+│   └── cli.py
+├── sistema/
+│   ├── __init__.py
+│   └── manager.py
+└── utilitarios/
+    ├── __init__.py
+    └── exceptions.py
+```
 
 ## Como executar
 
-Com o Python 3 instalado, abra um terminal na pasta do projeto e execute:
+Certifique-se de ter o Python instalado e, em seguida, execute:
 
 ```bash
 python main.py
 ```
 
-No Windows, também pode ser necessário usar:
+No Windows, também é possível usar:
 
 ```powershell
 py main.py
 ```
 
-Use as opções de 1 a 4 para gerenciar tarefas e a opção 5 para sair.
+## Observações da implementação atual
 
-## Limites atuais
+- As tarefas são armazenadas apenas em memória durante a execução do programa.
+- Quando o programa é encerrado, a lista é perdida.
+- A aplicação usa a descrição da tarefa como identificador principal.
+- Como a descrição é convertida para minúsculas antes do cadastro, tarefas repetidas em diferentes capitalizações não são permitidas.
+- A validação do menu e da seleção de tarefas é feita por conversão de tipo e repetição de entrada em caso de erro.
 
-- As tarefas ficam somente na memória do processo. Ao encerrar o programa, a lista é perdida.
-- Não há armazenamento em arquivo ou banco de dados, nem sincronização entre execuções.
-- A seleção é feita pela posição exibida na listagem; entradas numéricas fora do intervalo não possuem tratamento específico.
-- A descrição da tarefa é usada como chave do dicionário, portanto descrições repetidas substituem o estado associado a essa chave.
+## Conclusão
+
+O TaskForge é uma aplicação simples, funcional e bem organizada, que demonstra uma boa separação entre interface, lógica e tratamento de erros. Ele funciona como um exemplo claro de um sistema CLI em Python, com operações básicas para gestão de tarefas e estrutura pronta para expansão futura.

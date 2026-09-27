@@ -1,5 +1,5 @@
 from sistema.manager import Manager
-from utilitarios.exceptions import EmptyTaskList, TaskNotFound
+from utilitarios.exceptions import EmptyTaskList, TaskNotFound, TaskAlreadyCreated
 import os
 
 clear = lambda: os.system("cls" if os.name == "nt" else "clear")
@@ -16,8 +16,15 @@ class InterfaceCLI:
         }
 
     def add_task(self):
-        new_task = self.user_input("Digite a tarefa: ")
-        self.manager.add_task(new_task)
+        try:
+            new_task = self.user_input("Digite a tarefa: ").lower()
+            self.manager.add_task(new_task)
+            clear()
+            print("Tarefa:", new_task, "criada com sucesso!")
+
+        except TaskAlreadyCreated as e:
+            clear()
+            print(e)
     
     def show_tasks(self):
         try:
@@ -35,13 +42,14 @@ class InterfaceCLI:
             if self.show_tasks() == False:
                 return
 
-            users_choice = self.user_input("Escolha um dos numeros correspondente a tarefa: ", "selecione apenas números!", int)
-            task_list = list(self.manager.show_task())
-            task_done = task_list[users_choice - 1][0]
+            users_choice = self.user_input("Escolha uma tarefa disponível: ", "Algo deu errado, tente novamente", str).lower()
 
-            self.manager.task_done(task_done)
+            self.manager.task_done(users_choice)
+            clear()
+            print("Tarefa:", users_choice, "marcada como feita com sucesso!")
 
         except TaskNotFound as e:
+            clear()
             print(e)
 
     def del_task(self):
@@ -49,13 +57,14 @@ class InterfaceCLI:
             if self.show_tasks() == False:
                 return
 
-            users_choice = self.user_input("Escolha um dos numeros correspondente a tarefa: ", "selecione apenas números!", int)
-            task_list = list(self.manager.show_task())
-            deleted_task = task_list[users_choice - 1][0]
+            users_choice = self.user_input("Escolha uma tarefa disponível: ", "Algo deu errado, tente novamente", str).lower()
 
-            self.manager.del_task(deleted_task)
+            self.manager.del_task(users_choice)
+            clear()
+            print("Tarefa:", users_choice, "Deletada com sucesso!")
 
         except TaskNotFound as e:
+            clear()
             print(e) 
 
     def show_menu(self):

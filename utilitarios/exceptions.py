@@ -16,3 +16,8 @@ class TaskNotFound(TaskManagerError):
 
     def __str__(self):
         return super().__str__()
+
+class TaskAlreadyCreated(TaskManagerError):
+    def __init__(self, message = "Essa tarefa já existe!"):
+        self.message = message
+        super().__init__(self.message)
